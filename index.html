@@ -116,10 +116,6 @@ button:hover{background:#0ea5e9}
   color:black;
   margin-left:auto;
 }
-.iaMsg{
-  background:#22c55e;
-  color:black;
-}
 
 /* IA INPUT BAR */
 #iaInputArea{
@@ -155,15 +151,47 @@ button:hover{background:#0ea5e9}
   color:black;
   transition:.2s;
 }
-.iconBtn.active{animation:blink 1s infinite;}
 .iconBtn:hover{background:#fb923c}
 
-@keyframes blink{
-  0%,100%{transform:scale(1);}
-  50%{transform:scale(1.1);}
+/* VOICE OVERLAY CIRCLE */
+#voiceOverlay{
+  display:none;
+  position:fixed;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  width:140px;
+  height:140px;
+  border-radius:50%;
+  background:#f97316;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  animation: pulse 1.2s infinite;
+  z-index:1000;
+  color:black;
+  font-size:28px;
+  box-shadow:0 0 20px #fb923c;
+  flex-direction:column;
 }
-
-#fileInput{display:none}
+#voiceOverlay button{
+  margin:2px;
+  width:40px; height:40px;
+  border-radius:50%;
+  border:none;
+  background:#fb923c;
+  color:black;
+  font-weight:bold;
+  cursor:pointer;
+  font-size:14px;
+}
+#voiceOverlay button:hover{
+  background:#f87171;
+}
+@keyframes pulse{
+  0%{transform:translate(-50%,-50%) scale(1);}
+  50%{transform:translate(-50%,-50%) scale(1.1);}
+  100%{transform:translate(-50%,-50%) scale(1);}
+}
 
 /* FOOTER */
 footer{
@@ -175,7 +203,6 @@ footer{
 }
 </style>
 </head>
-
 <body>
 
 <header>
@@ -202,7 +229,6 @@ footer{
       <option value="#ec4899">Rose</option>
     </select>
   </div>
-
   <div class="card">
     <h3>🌍 Langue</h3>
     <select>
@@ -212,7 +238,6 @@ footer{
       <option>Allemand</option>
     </select>
   </div>
-
   <div class="card">
     <h3>✅ Tâches</h3>
     <input id="taskInput" placeholder="Nouvelle tâche">
@@ -224,13 +249,22 @@ footer{
 <!-- IA -->
 <div id="ia" class="page">
   <div id="chatContainer"></div>
-
   <div id="iaInputArea">
     <div class="iconBtn" onclick="fileInput.click()">+</div>
     <input id="iaInput" placeholder="Écris un message…">
-    <div class="iconBtn" id="voiceBtn" onclick="toggleVoice()">🎤</div>
-    <div class="iconBtn" onclick="askIA()">⬆</div>
+    <div class="iconBtn" id="voiceBtn" onclick="startVoice()">🎤</div>
+    <div class="iconBtn" onclick="sendText()">⬆</div>
     <input type="file" id="fileInput" accept="image/*">
+  </div>
+</div>
+
+<!-- VOICE OVERLAY -->
+<div id="voiceOverlay">
+  🎙️
+  <div>
+    <button onclick="setVoice('male')">♂</button>
+    <button onclick="setVoice('female')">♀</button>
+    <button onclick="setVoice('chatgpt')">GPT</button>
   </div>
 </div>
 
@@ -275,11 +309,7 @@ let tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
 function renderTasks(){
   taskList.innerHTML="";
   tasks.forEach((t,i)=>{
-    taskList.innerHTML+=`
-      <div class="task">
-        <span>${t}</span>
-        <span class="trash" onclick="delTask(${i})">🗑️</span>
-      </div>`;
+    taskList.innerHTML=`<div class="task"><span>${t}</span><span class="trash" onclick="delTask(${i})">🗑️</span></div>`+taskList.innerHTML;
   });
 }
 function addTask(){
@@ -296,78 +326,77 @@ function delTask(i){
 }
 renderTasks();
 
-// VOIX
-let recognition;
-let listening = false;
+// VOICE SETTINGS
+let selectedVoice = 'female';
+function setVoice(v){ selectedVoice=v; }
 
-function toggleVoice() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) { alert("Vocal non supporté"); return; }
-
-  const voiceBtn = document.getElementById("voiceBtn");
-
-  if (!listening) {
-    recognition = new SpeechRecognition();
-    recognition.lang = 'fr-FR';
-    recognition.continuous = false;
-    recognition.start();
-    listening = true;
-    voiceBtn.classList.add("active");
-
-    // Choix voix pour la première fois
-    let voiceType = prompt("Choisissez une voix : Femme / Homme / ChatGPT", "Femme");
-
-    recognition.onresult = e => {
-      const text = e.results[0][0].transcript;
-      iaInput.value = text;
-      const reply = generateAIReply(text);
-      speak(reply, voiceType);
-      iaInput.value = "";
-    };
-
-    recognition.onend = () => { listening = false; voiceBtn.classList.remove("active"); };
-  } else {
-    recognition.stop();
-    listening = false;
-    voiceBtn.classList.remove("active");
-  }
-}
-
-function askIA() {
+// SEND TEXT
+function sendText(){
   const text = iaInput.value.trim();
   if(!text) return;
-
-  const reply = generateAIReply(text);
-  // Voix par défaut ChatGPT
-  speak(reply, "ChatGPT");
-
+  chatContainer.innerHTML += `<div class="message userMsg">${text}</div>`;
   iaInput.value = "";
+  const reply = generateAIReply(text);
+  speakWithOverlay(reply);
 }
 
-// SIMULATION IA
-function generateAIReply(question) {
-  if(question.toLowerCase().includes("h")) return "Salut ! Comment ça va ?";
-  if(question.toLowerCase().includes("bonjour")) return "Bonjour ! Je suis là pour t'aider.";
-  if(question.toLowerCase().includes("comment")) return "Je vais très bien, merci !";
-  return "Je réfléchis à ta question… et voici ma réponse en voix !";
+// VOICE
+let recognition;
+function startVoice(){
+  const overlay = document.getElementById("voiceOverlay");
+  overlay.style.display="flex";
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRecognition){alert("Vocal non supporté"); return;}
+
+  recognition = new SpeechRecognition();
+  recognition.lang="fr-FR";
+  recognition.start();
+
+  recognition.onresult = e => {
+    const text = e.results[0][0].transcript;
+    chatContainer.innerHTML += `<div class="message userMsg">${text}</div>`;
+    const reply = generateAIReply(text);
+    speakWithOverlay(reply);
+  };
+
+  recognition.onend = () => {
+    overlay.style.display="none";
+  };
 }
 
-// SPEAK
-function speak(text, type="Femme") {
+// IA RESPONSE SIMULATION
+function generateAIReply(q){
+  if(q.toLowerCase().includes("h")) return "Salut ! Comment ça va ?";
+  if(q.toLowerCase().includes("bonjour")) return "Bonjour ! Je suis là pour t'aider.";
+  if(q.toLowerCase().includes("comment")) return "Je vais très bien, merci !";
+  return "Voici ma réponse en voix !";
+}
+
+// SPEAK + ANIMATION OVERLAY
+function speakWithOverlay(text){
+  const overlay = document.getElementById("voiceOverlay");
+  overlay.style.display="flex";
+
+  let voices = speechSynthesis.getVoices();
+  let voice;
+
+  if(selectedVoice==='male') voice = voices.find(v=>v.name.toLowerCase().includes('male')) || voices[0];
+  else if(selectedVoice==='female') voice = voices.find(v=>v.name.toLowerCase().includes('female')) || voices[0];
+  else voice = voices[0]; // chatgpt style default
+
   const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = 'fr-FR';
-  const voices = speechSynthesis.getVoices();
+  utter.lang="fr-FR";
+  utter.voice = voice;
 
-  if(type.toLowerCase() === "homme") {
-    const male = voices.find(v=>v.lang.includes('FR') && v.name.toLowerCase().includes('male'));
-    if(male) utter.voice = male;
-  } else if(type.toLowerCase() === "chatgpt") {
-    const chatgptVoice = voices.find(v=>v.lang.includes('FR') && v.name.toLowerCase().includes('samantha'));
-    if(chatgptVoice) utter.voice = chatgptVoice;
-  } else {
-    const female = voices.find(v=>v.lang.includes('FR') && v.name.toLowerCase().includes('female'));
-    if(female) utter.voice = female;
-  }
+  utter.onstart = ()=>{
+    overlay.style.background="#22c55e";
+    overlay.style.boxShadow="0 0 30px #22c55e";
+  };
+  utter.onend = ()=>{
+    overlay.style.background="#f97316";
+    overlay.style.boxShadow="0 0 20px #fb923c";
+    overlay.style.display="none";
+  };
 
   speechSynthesis.speak(utter);
 }
@@ -376,23 +405,16 @@ function speak(text, type="Femme") {
 fileInput.onchange=e=>{
   const file=e.target.files[0];
   if(!file) return;
-
   const reader=new FileReader();
   reader.onload=ev=>{
-    chatContainer.innerHTML+=`
-      <div class="message userMsg">
-        <img src="${ev.target.result}" style="max-width:100%;border-radius:12px">
-      </div>`;
+    chatContainer.innerHTML+=`<div class="message userMsg"><img src="${ev.target.result}" style="max-width:100%;border-radius:12px"></div>`;
   };
   reader.readAsDataURL(file);
 }
 
 // PROMO
 function validatePromo(){
-  promoResult.textContent =
-    promoInput.value==="PROMO2026"
-    ? "Code valide"
-    : "Code invalide";
+  promoResult.textContent = promoInput.value==="PROMO2026" ? "Code valide" : "Code invalide";
 }
 </script>
 </body>
