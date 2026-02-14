@@ -122,16 +122,17 @@ button:hover{background:#0ea5e9}
   color:black;
 }
 
-/* IA INPUT BARRE STYLE CAPTURE */
+/* IA INPUT BAR */
 #iaInputArea{
   display:flex;
-  align-items:center;
   gap:8px;
   margin-top:10px;
+  align-items:center;
   background:rgba(255,255,255,.15);
   border-radius:30px;
   padding:8px;
 }
+
 #iaInput{
   flex:1;
   background:transparent;
@@ -140,17 +141,23 @@ button:hover{background:#0ea5e9}
   font-size:15px;
   outline:none;
 }
+
+/* ICON BUTTONS */
 .iconBtn{
-  width:42px;
-  height:42px;
+  width:46px;
+  height:46px;
   border-radius:50%;
   background:#38bdf8;
   display:flex;
   align-items:center;
   justify-content:center;
+  font-size:18px;
   cursor:pointer;
+  color:black;
 }
-.iconBtn svg{width:22px;height:22px;fill:white;}
+.iconBtn:hover{background:#0ea5e9}
+
+#fileInput{display:none}
 
 /* FOOTER */
 footer{
@@ -213,36 +220,13 @@ footer{
 
   <div id="chatContainer"></div>
 
-  <!-- INTERFACE BAS (MODIFIÉE UNIQUEMENT) -->
   <div id="iaInputArea">
-    <!-- Plus -->
-    <div class="iconBtn" onclick="fileInput.click()" title="Ajouter image">
-      <svg viewBox="0 0 24 24">
-        <path d="M19 11H13V5h-2v6H5v2h6v6h2v-6h6z"/>
-      </svg>
-    </div>
-
-    <!-- Texte -->
+    <div class="iconBtn" onclick="fileInput.click()">+</div>
     <input id="iaInput" placeholder="Écris un message…">
-
-    <!-- Micro -->
-    <div class="iconBtn" onclick="startVoice()" title="Parler">
-      <svg viewBox="0 0 24 24">
-        <path d="M12 14a3 3 0 003-3V5a3 3 0 00-6 0v6a3 3 0 003 3z"/>
-        <path d="M5 10v2a7 7 0 0014 0v-2h-2v2a5 5 0 01-10 0v-2H5z"/>
-      </svg>
-    </div>
-
-    <!-- Envoyer -->
-    <div class="iconBtn" onclick="askIA()" title="Envoyer">
-      <svg viewBox="0 0 24 24">
-        <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
-      </svg>
-    </div>
+    <div class="iconBtn" onclick="startVoice()">🎤</div>
+    <div class="iconBtn" onclick="askIA()">⬆</div>
+    <input type="file" id="fileInput" accept="image/*">
   </div>
-
-  <input type="file" id="fileInput" accept="image/*" hidden>
-
 </div>
 
 <!-- PROMO -->
@@ -286,7 +270,11 @@ let tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
 function renderTasks(){
   taskList.innerHTML="";
   tasks.forEach((t,i)=>{
-    taskList.innerHTML+=`<div class="task"><span>${t}</span><span class="trash" onclick="delTask(${i})">🗑️</span></div>`;
+    taskList.innerHTML+=`
+      <div class="task">
+        <span>${t}</span>
+        <span class="trash" onclick="delTask(${i})">🗑️</span>
+      </div>`;
   });
 }
 function addTask(){
@@ -303,44 +291,63 @@ function delTask(i){
 }
 renderTasks();
 
-// IA TEXTE
-function askIA(){
-  const q=iaInput.value.trim();
-  if(!q)return;
-  chatContainer.innerHTML+=`<div class="message userMsg">${q}</div>`;
-  const reply="Tu as dit : " + q;
-  chatContainer.innerHTML+=`<div class="message iaMsg">${reply}</div>`;
-  speak(reply);
-  iaInput.value="";
-  chatContainer.scrollTop=chatContainer.scrollHeight;
-}
+// IA TEXTE → VOIX DIRECTE
+function askIA() {
+  const q = iaInput.value.trim();
+  if(!q) return;
 
-// IA VOIX → TEXTE
-function startVoice(){
-  const rec = new(window.SpeechRecognition||window.webkitSpeechRecognition)();
-  rec.lang="fr-FR";
-  rec.start();
-  rec.onresult=e=>{
-    const text=e.results[0][0].transcript;
-    iaInput.value=text;
-    askIA();
-  };
+  const reply = simulateAIResponse(q);
+  speak(reply);
+
+  iaInput.value="";
 }
 
 // IA VOIX → PAROLE
-function speak(text){
-  const u=new SpeechSynthesisUtterance(text);
-  u.lang="fr-FR";
+function startVoice() {
+  const rec = new (window.SpeechRecognition||window.webkitSpeechRecognition)();
+  rec.lang="fr-FR";
+  rec.start();
+
+  rec.onresult = e => {
+    const text = e.results[0][0].transcript;
+    iaInput.value = text;
+
+    const reply = simulateAIResponse(text);
+    speak(reply);
+
+    iaInput.value = "";
+  };
+}
+
+// SIMULATION IA INTELLIGENTE
+function simulateAIResponse(question) {
+  if(question.toLowerCase().includes("h")) return "Salut ! Comment ça va ?";
+  if(question.toLowerCase().includes("bonjour")) return "Bonjour ! Je suis là pour t'aider.";
+  if(question.toLowerCase().includes("comment")) return "Je vais très bien, merci de demander !";
+  return "Je réfléchis à ta question… et voici ma réponse en voix !";
+}
+
+// VOIX
+function speak(text) {
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'fr-FR';
+  const voices = speechSynthesis.getVoices();
+  const frenchVoice = voices.find(v => v.lang.includes('FR'));
+  if(frenchVoice) u.voice = frenchVoice;
   speechSynthesis.speak(u);
 }
 
 // IMAGE
 fileInput.onchange=e=>{
   const file=e.target.files[0];
-  if(!file)return;
+  if(!file) return;
+
   const reader=new FileReader();
   reader.onload=ev=>{
-    chatContainer.innerHTML+=`<div class="message userMsg"><img src="${ev.target.result}" style="max-width:100%;border-radius:12px"></div>`;
+    chatContainer.innerHTML+=`
+      <div class="message userMsg">
+        <img src="${ev.target.result}" style="max-width:100%;border-radius:12px">
+      </div>`;
   };
   reader.readAsDataURL(file);
 }
@@ -355,4 +362,4 @@ function validatePromo(){
 </script>
 
 </body>
-                  </html>
+  </html>
