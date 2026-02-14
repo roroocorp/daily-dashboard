@@ -53,7 +53,11 @@ header h3{font-size:18px;}
 .navBox:hover{background:rgba(255,255,255,.45);}
 
 /* PAGES */
-.page{display:none;flex-direction:column;padding:14px;}
+.page{
+  display:none;
+  flex-direction:column;
+  padding:14px;
+}
 .page.active{display:flex;}
 
 /* CARD */
@@ -67,13 +71,19 @@ header h3{font-size:18px;}
 
 /* INPUT */
 input,select,button{
+  width:100%;
   padding:14px;
   border-radius:16px;
   border:none;
   font-size:15px;
 }
-button{font-weight:700;cursor:pointer;}
-button:hover{opacity:.9}
+button{
+  background:#38bdf8;
+  font-weight:700;
+  margin-top:10px;
+  cursor:pointer;
+}
+button:hover{background:#0ea5e9}
 
 /* TASKS */
 .task{
@@ -101,11 +111,16 @@ button:hover{opacity:.9}
   border-radius:18px;
   margin:6px 0;
   white-space:pre-line;
-  display:flex;
-  align-items:center;
 }
-.userMsg{background:#38bdf8;color:black;margin-left:auto;}
-.iaMsg{background:#22c55e;color:black;}
+.userMsg{
+  background:#38bdf8;
+  color:black;
+  margin-left:auto;
+}
+.iaMsg{
+  background:#22c55e;
+  color:black;
+}
 
 /* IA INPUT BAR */
 #iaInputArea{
@@ -113,35 +128,36 @@ button:hover{opacity:.9}
   gap:8px;
   margin-top:10px;
   align-items:center;
-  padding:6px;
+  background:rgba(255,255,255,.15);
   border-radius:30px;
-  background:#ef4444;
+  padding:8px;
 }
-#iaInput{flex:1;background:transparent;color:white;border:none;outline:none;padding:10px 14px;border-radius:20px;}
-.circleBtn{
+
+#iaInput{
+  flex:1;
+  background:transparent;
+  border:none;
+  color:white;
+  font-size:15px;
+  outline:none;
+}
+
+/* ICON BUTTONS */
+.iconBtn{
   width:46px;
   height:46px;
   border-radius:50%;
-  font-size:18px;
+  background:#38bdf8;
   display:flex;
   align-items:center;
   justify-content:center;
-  background:#ef4444;
-  color:white;
+  font-size:18px;
   cursor:pointer;
-  border:none;
+  color:black;
 }
-.circleBtn:hover{opacity:.8}
+.iconBtn:hover{background:#0ea5e9}
 
-/* BUBBLE ANIMATION */
-.speaking{
-  animation: pulse 1s infinite;
-}
-@keyframes pulse{
-  0%{transform:scale(1);}
-  50%{transform:scale(1.05);}
-  100%{transform:scale(1);}
-}
+#fileInput{display:none}
 
 /* FOOTER */
 footer{
@@ -201,14 +217,15 @@ footer{
 
 <!-- IA -->
 <div id="ia" class="page">
+
   <div id="chatContainer"></div>
 
   <div id="iaInputArea">
-    <button class="circleBtn" onclick="fileInput.click()">+</button>
-    <input type="file" id="fileInput" accept="image/*" style="display:none;">
-    <input id="iaInput" placeholder="Écris un message...">
-    <button class="circleBtn" onclick="toggleVoice()">🎤</button>
-    <button class="circleBtn" onclick="askIA()">➡</button>
+    <div class="iconBtn" onclick="fileInput.click()">+</div>
+    <input id="iaInput" placeholder="Écris un message…">
+    <div class="iconBtn" onclick="startVoice()">🎤</div>
+    <div class="iconBtn" onclick="askIA()">⬆</div>
+    <input type="file" id="fileInput" accept="image/*">
   </div>
 </div>
 
@@ -253,7 +270,11 @@ let tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
 function renderTasks(){
   taskList.innerHTML="";
   tasks.forEach((t,i)=>{
-    taskList.innerHTML+=`<div class="task"><span>${t}</span><span class="trash" onclick="delTask(${i})">🗑️</span></div>`;
+    taskList.innerHTML+=`
+      <div class="task">
+        <span>${t}</span>
+        <span class="trash" onclick="delTask(${i})">🗑️</span>
+      </div>`;
   });
 }
 function addTask(){
@@ -270,84 +291,64 @@ function delTask(i){
 }
 renderTasks();
 
-// IA VOICE SETTINGS
-let chosenVoice=null;
-let voices=[];
+// IA TEXTE → VOIX DIRECTE
+function askIA() {
+  const q = iaInput.value.trim();
+  if(!q) return;
 
-function populateVoices(){
-  voices=speechSynthesis.getVoices();
-  if(!chosenVoice && voices.length>0){
-    chosenVoice=voices[0];
-  }
-}
-speechSynthesis.onvoiceschanged=populateVoices;
-
-// IA VOICE TO TEXT
-let recognition;
-let listening=false;
-function toggleVoice(){
-  if(!chosenVoice){
-    alert("Choisis la voix d'abord dans ton navigateur !");
-    return;
-  }
-  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SpeechRecognition){alert("Vocal non supporté");return;}
-  if(!listening){
-    recognition=new SpeechRecognition();
-    recognition.lang="fr-FR";
-    recognition.start();
-    listening=true;
-
-    recognition.onresult=e=>{
-      iaInput.value=e.results[0][0].transcript;
-      askIA();
-    };
-    recognition.onend=()=>{listening=false;}
-  }else{
-    recognition.stop();
-    listening=false;
-  }
-}
-
-// IA TEXT -> SPEECH ONLY
-function askIA(){
-  const q=iaInput.value.trim();
-  if(!q)return;
+  const reply = simulateAIResponse(q);
+  speak(reply);
 
   iaInput.value="";
-  chatContainer.scrollTop=chatContainer.scrollHeight;
-
-  // bubble anim
-  const bubble=document.createElement("div");
-  bubble.className="message iaMsg speaking";
-  bubble.textContent="..."; 
-  chatContainer.appendChild(bubble);
-  chatContainer.scrollTop=chatContainer.scrollHeight;
-
-  // speak
-  const utter=new SpeechSynthesisUtterance("Salut ! Je viens de recevoir : "+q);
-  utter.voice=chosenVoice;
-  utter.lang="fr-FR";
-  utter.onend=()=>{bubble.remove();};
-  speechSynthesis.speak(utter);
 }
 
-// IMAGE UPLOAD
+// IA VOIX → PAROLE
+function startVoice() {
+  const rec = new (window.SpeechRecognition||window.webkitSpeechRecognition)();
+  rec.lang="fr-FR";
+  rec.start();
+
+  rec.onresult = e => {
+    const text = e.results[0][0].transcript;
+    iaInput.value = text;
+
+    const reply = simulateAIResponse(text);
+    speak(reply);
+
+    iaInput.value = "";
+  };
+}
+
+// SIMULATION IA INTELLIGENTE
+function simulateAIResponse(question) {
+  if(question.toLowerCase().includes("h")) return "Salut ! Comment ça va ?";
+  if(question.toLowerCase().includes("bonjour")) return "Bonjour ! Je suis là pour t'aider.";
+  if(question.toLowerCase().includes("comment")) return "Je vais très bien, merci de demander !";
+  return "Je réfléchis à ta question… et voici ma réponse en voix !";
+}
+
+// VOIX
+function speak(text) {
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'fr-FR';
+  const voices = speechSynthesis.getVoices();
+  const frenchVoice = voices.find(v => v.lang.includes('FR'));
+  if(frenchVoice) u.voice = frenchVoice;
+  speechSynthesis.speak(u);
+}
+
+// IMAGE
 fileInput.onchange=e=>{
   const file=e.target.files[0];
-  if(!file)return;
+  if(!file) return;
+
   const reader=new FileReader();
   reader.onload=ev=>{
-    const div=document.createElement("div");
-    div.className="message userMsg";
-    const img=document.createElement("img");
-    img.src=ev.target.result;
-    img.style.maxWidth="100%";
-    img.style.borderRadius="12px";
-    div.appendChild(img);
-    chatContainer.appendChild(div);
-    chatContainer.scrollTop=chatContainer.scrollHeight;
-  }
+    chatContainer.innerHTML+=`
+      <div class="message userMsg">
+        <img src="${ev.target.result}" style="max-width:100%;border-radius:12px">
+      </div>`;
+  };
   reader.readAsDataURL(file);
 }
 
@@ -361,4 +362,4 @@ function validatePromo(){
 </script>
 
 </body>
-  </html>
+      </html>
