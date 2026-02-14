@@ -111,6 +111,7 @@ button:hover{background:#0ea5e9}
   border-radius:18px;
   margin:6px 0;
   white-space:pre-line;
+  transition:.3s;
 }
 .userMsg{
   background:#38bdf8;
@@ -147,17 +148,47 @@ button:hover{background:#0ea5e9}
   width:46px;
   height:46px;
   border-radius:50%;
-  background:#38bdf8;
+  background:#ef4444; /* 100% roux */
   display:flex;
   align-items:center;
   justify-content:center;
   font-size:18px;
   cursor:pointer;
   color:black;
+  transition:.2s;
 }
-.iconBtn:hover{background:#0ea5e9}
 
-#fileInput{display:none}
+/* MICRO ANIMATION */
+.micActive{
+  box-shadow:0 0 20px #f87171;
+}
+
+/* VOIX MENU SLIDER */
+#voiceSlider{
+  position:absolute;
+  bottom:70px;
+  left:50%;
+  transform:translateX(-50%);
+  display:none;
+  background:rgba(0,0,0,.8);
+  border-radius:18px;
+  padding:10px 14px;
+  color:white;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+#voiceSlider span{
+  font-weight:700;
+  cursor:pointer;
+  padding:6px 12px;
+  border-radius:14px;
+  background:#38bdf8;
+  user-select:none;
+}
+#voiceSlider span.active{
+  background:#0ea5e9;
+}
 
 /* FOOTER */
 footer{
@@ -221,11 +252,18 @@ footer{
   <div id="chatContainer"></div>
 
   <div id="iaInputArea">
-    <div class="iconBtn" onclick="fileInput.click()">+</div>
+    <div class="iconBtn" id="addBtn" onclick="fileInput.click()">+</div>
     <input id="iaInput" placeholder="Écris un message…">
-    <div class="iconBtn" onclick="startVoice()">🎤</div>
+    <div class="iconBtn" id="micBtn" onclick="toggleVoiceSlider()">🎤</div>
     <div class="iconBtn" onclick="askIA()">⬆</div>
     <input type="file" id="fileInput" accept="image/*">
+  </div>
+
+  <!-- VOIX SLIDER -->
+  <div id="voiceSlider">
+    <span data-voice="female">Femme</span>
+    <span data-voice="male">Homme</span>
+    <span data-voice="chatgpt" class="active">ChatGPT</span>
   </div>
 </div>
 
@@ -291,49 +329,108 @@ function delTask(i){
 }
 renderTasks();
 
-// IA TEXTE → VOIX DIRECTE
+// IA VARIABLES
+let selectedVoice = 'chatgpt';
+let listening = false;
+let audioContext, analyser, microphone, dataArray;
+
+// VOIX SLIDER
+function toggleVoiceSlider(){
+  const slider = document.getElementById('voiceSlider');
+  slider.style.display = slider.style.display==='flex'?'none':'flex';
+}
+
+document.querySelectorAll('#voiceSlider span').forEach(el=>{
+  el.onclick=()=>{
+    document.querySelectorAll('#voiceSlider span').forEach(e=>e.classList.remove('active'));
+    el.classList.add('active');
+    selectedVoice = el.dataset.voice;
+    document.getElementById('voiceSlider').style.display='none';
+    if(!listening) startVoice();
+  }
+});
+
+// IA TEXTE → VOIX
 function askIA() {
   const q = iaInput.value.trim();
   if(!q) return;
-
-  const reply = simulateAIResponse(q);
-  speak(reply);
-
+  showSpeakingBubble(simulateAIResponse(q));
   iaInput.value="";
 }
 
-// IA VOIX → PAROLE
-function startVoice() {
-  const rec = new (window.SpeechRecognition||window.webkitSpeechRecognition)();
-  rec.lang="fr-FR";
-  rec.start();
+// IA VOIX → PAROLE + VISUAL
+async function startVoice(){
+  if(listening) return;
+  listening=true;
+  const micBtn = document.getElementById('micBtn');
+  micBtn.classList.add('micActive');
 
-  rec.onresult = e => {
-    const text = e.results[0][0].transcript;
-    iaInput.value = text;
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    audioContext = new AudioContext();
+    analyser = audioContext.createAnalyser();
+    microphone = audioContext.createMediaStreamSource(stream);
+    microphone.connect(analyser);
+    analyser.fftSize=256;
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-    const reply = simulateAIResponse(text);
-    speak(reply);
+    function visualize(){
+      if(!listening) return;
+      analyser.getByteFrequencyData(dataArray);
+      const volume = dataArray.reduce((a,b)=>a+b)/dataArray.length/255;
+      micBtn.style.transform = `scale(${1+volume/2})`;
+      requestAnimationFrame(visualize);
+    }
+    visualize();
+  }catch(e){
+    console.error(e);
+  }
 
-    iaInput.value = "";
+  const recognition = new (window.SpeechRecognition||window.webkitSpeechRecognition)();
+  recognition.lang='fr-FR';
+  recognition.continuous=true;
+  recognition.start();
+
+  recognition.onresult = e => {
+    const text = e.results[e.results.length-1][0].transcript;
+    iaInput.value=text;
+    showSpeakingBubble(simulateAIResponse(text));
+    iaInput.value="";
   };
+
+  recognition.onend = ()=>{micBtn.classList.remove('micActive'); micBtn.style.transform='scale(1)'; listening=false;}
 }
 
-// SIMULATION IA INTELLIGENTE
-function simulateAIResponse(question) {
+// IA PULSE VISUELLE
+function showSpeakingBubble(text){
+  const msg = document.createElement('div');
+  msg.className='message iaMsg';
+  msg.textContent=text;
+  chatContainer.appendChild(msg);
+  chatContainer.scrollTop=chatContainer.scrollHeight;
+  speak(text);
+}
+
+// SIMULATION IA
+function simulateAIResponse(question){
   if(question.toLowerCase().includes("h")) return "Salut ! Comment ça va ?";
   if(question.toLowerCase().includes("bonjour")) return "Bonjour ! Je suis là pour t'aider.";
-  if(question.toLowerCase().includes("comment")) return "Je vais très bien, merci de demander !";
+  if(question.toLowerCase().includes("comment")) return "Je vais très bien, merci !";
   return "Je réfléchis à ta question… et voici ma réponse en voix !";
 }
 
-// VOIX
-function speak(text) {
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'fr-FR';
+// SPEAK
+function speak(text){
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='fr-FR';
   const voices = speechSynthesis.getVoices();
-  const frenchVoice = voices.find(v => v.lang.includes('FR'));
-  if(frenchVoice) u.voice = frenchVoice;
+  if(selectedVoice==='female'){
+    const v = voices.find(v=>v.lang.includes('FR') && v.name.toLowerCase().includes('female'));
+    if(v) u.voice=v;
+  }else if(selectedVoice==='male'){
+    const v = voices.find(v=>v.lang.includes('FR') && v.name.toLowerCase().includes('male'));
+    if(v) u.voice=v;
+  }
   speechSynthesis.speak(u);
 }
 
@@ -341,7 +438,6 @@ function speak(text) {
 fileInput.onchange=e=>{
   const file=e.target.files[0];
   if(!file) return;
-
   const reader=new FileReader();
   reader.onload=ev=>{
     chatContainer.innerHTML+=`
@@ -362,4 +458,4 @@ function validatePromo(){
 </script>
 
 </body>
-      </html>
+  </html>
