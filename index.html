@@ -13,7 +13,7 @@ body{
   display:flex;
   flex-direction:column;
   transition:background .4s;
-  position: relative;
+  overflow-x:hidden;
 }
 
 /* HEADER */
@@ -111,7 +111,6 @@ button:hover{background:#0ea5e9}
   border-radius:18px;
   margin:6px 0;
   white-space:pre-line;
-  animation: appear 0.3s ease;
 }
 .userMsg{
   background:#38bdf8;
@@ -119,20 +118,10 @@ button:hover{background:#0ea5e9}
   margin-left:auto;
 }
 .iaMsg{
-  background:linear-gradient(90deg,#f97316,#facc15,#f43f5e,#a855f7);
+  background:#22c55e;
   color:black;
-  animation: glow 1s infinite alternate;
-}
-
-/* glow animation IA */
-@keyframes glow {
-  0% { filter: brightness(0.9); }
-  100% { filter: brightness(1.2); }
-}
-
-@keyframes appear {
-  from { opacity:0; transform: translateY(10px); }
-  to { opacity:1; transform: translateY(0); }
+  text-align:center;
+  font-weight:700;
 }
 
 /* IA INPUT BAR */
@@ -145,7 +134,6 @@ button:hover{background:#0ea5e9}
   border-radius:30px;
   padding:8px;
 }
-
 #iaInput{
   flex:1;
   background:transparent;
@@ -160,7 +148,7 @@ button:hover{background:#0ea5e9}
   width:46px;
   height:46px;
   border-radius:50%;
-  background:#f97316;
+  background:#f97316; /* bien orange */
   display:flex;
   align-items:center;
   justify-content:center;
@@ -168,7 +156,35 @@ button:hover{background:#0ea5e9}
   cursor:pointer;
   color:black;
 }
-.iconBtn:hover{background:#f87171}
+.iconBtn:hover{background:#ea580c}
+
+/* BULLE IA AU CENTRE */
+#aiBubble{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:#22c55e;
+  color:black;
+  border-radius:50%;
+  width:120px;
+  height:120px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+  font-size:16px;
+  text-align:center;
+  display:none;
+  box-shadow:0 0 20px rgba(0,0,0,0.3);
+  animation: pulse 1s infinite;
+  z-index:9999;
+}
+@keyframes pulse{
+  0%{transform:translate(-50%,-50%) scale(1);}
+  50%{transform:translate(-50%,-50%) scale(1.1);}
+  100%{transform:translate(-50%,-50%) scale(1);}
+}
 
 #fileInput{display:none}
 
@@ -180,37 +196,8 @@ footer{
   text-align:right;
   opacity:.7;
 }
-
-/* Overlay vocal */
-#voiceOverlay{
-  display:none;
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  width:150px;
-  height:150px;
-  border-radius:50%;
-  background:linear-gradient(135deg,#f97316,#facc15,#f43f5e);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:white;
-  font-size:24px;
-  font-weight:bold;
-  text-align:center;
-  z-index:1000;
-  box-shadow:0 0 20px rgba(0,0,0,0.5);
-  animation: pulse 1s infinite alternate;
-}
-
-@keyframes pulse{
-  0%{ transform:translate(-50%,-50%) scale(1);}
-  100%{ transform:translate(-50%,-50%) scale(1.1);}
-}
 </style>
 </head>
-
 <body>
 
 <header>
@@ -263,13 +250,14 @@ footer{
   <div id="iaInputArea">
     <div class="iconBtn" onclick="fileInput.click()">+</div>
     <input id="iaInput" placeholder="Écris un message…">
-    <div class="iconBtn" onclick="toggleVoice()">🎤</div>
-    <div class="iconBtn" onclick="askIA()">⬆</div>
+    <div class="iconBtn" onclick="startVoice()">🎤</div>
+    <div class="iconBtn" onclick="sendMessage()">⬆</div>
     <input type="file" id="fileInput" accept="image/*">
   </div>
 </div>
 
-<div id="voiceOverlay">🎙️ Écoute...</div>
+<!-- BULLE IA CENTRALE -->
+<div id="aiBubble">IA</div>
 
 <!-- PROMO -->
 <div id="promo" class="page">
@@ -312,11 +300,15 @@ let tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
 function renderTasks(){
   taskList.innerHTML="";
   tasks.forEach((t,i)=>{
-    taskList.innerHTML+=`<div class="task"><span>${t}</span><span class="trash" onclick="delTask(${i})">🗑️</span></div>`;
+    taskList.innerHTML+=`
+      <div class="task">
+        <span>${t}</span>
+        <span class="trash" onclick="delTask(${i})">🗑️</span>
+      </div>`;
   });
 }
 function addTask(){
-  if(!taskInput.value.trim()) return;
+  if(!taskInput.value.trim())return;
   tasks.push(taskInput.value.trim());
   localStorage.setItem("tasks",JSON.stringify(tasks));
   taskInput.value="";
@@ -329,77 +321,60 @@ function delTask(i){
 }
 renderTasks();
 
-// IA
-function askIA(){
-  const q = iaInput.value.trim();
-  if(!q) return;
-  const reply = simulateAIResponse(q);
-  addIAResponse(reply);
+// ENVOI MESSAGE UTILISATEUR
+function sendMessage(){
+  const text = iaInput.value.trim();
+  if(!text) return;
+  chatContainer.innerHTML+=`<div class="message userMsg">${text}</div>`;
   iaInput.value="";
-}
-
-// SIMULATION IA
-function simulateAIResponse(question){
-  question = question.toLowerCase();
-  if(question.includes("h")) return "Salut ! Comment ça va ?";
-  if(question.includes("bonjour")) return "Bonjour ! Je suis là pour t'aider.";
-  if(question.includes("comment")) return "Je vais très bien, merci de demander !";
-  return "Je réfléchis à ta question…";
-}
-
-// AJOUT BULL IA
-function addIAResponse(text){
-  const msg = document.createElement("div");
-  msg.className="message iaMsg";
-  msg.textContent = text;
-  chatContainer.appendChild(msg);
+  respondAI(text);
   chatContainer.scrollTop=chatContainer.scrollHeight;
-  speak(text);
+}
+
+// RESPONSES IA
+function respondAI(text){
+  const aiBubble = document.getElementById('aiBubble');
+  aiBubble.style.display='flex';
+
+  // simulation IA simple
+  let reply;
+  if(text.toLowerCase().includes("h")) reply="Salut ! Comment ça va ?";
+  else if(text.toLowerCase().includes("bonjour")) reply="Bonjour ! Je suis là pour t'aider.";
+  else if(text.toLowerCase().includes("comment")) reply="Je vais très bien, merci !";
+  else reply="Je réfléchis à ta question…";
+
+  speak(reply,()=>{
+    aiBubble.style.display='none';
+    // ajouter la bulle IA dans le chat
+    chatContainer.innerHTML+=`<div class="message iaMsg">${reply}</div>`;
+    chatContainer.scrollTop=chatContainer.scrollHeight;
+  });
 }
 
 // VOIX
-let recognition;
-let listening=false;
-
-function toggleVoice(){
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SpeechRecognition){alert("Vocal non supporté"); return;}
-
-  if(!listening){
-    recognition = new SpeechRecognition();
-    recognition.lang='fr-FR';
-    recognition.continuous=false;
-    recognition.start();
-    listening=true;
-    document.getElementById("voiceOverlay").style.display="flex";
-
-    recognition.onresult = e=>{
-      const text = e.results[0][0].transcript;
-      const reply = simulateAIResponse(text);
-      addIAResponse(reply);
-      listening=false;
-      document.getElementById("voiceOverlay").style.display="none";
-    }
-
-    recognition.onend = ()=>{
-      listening=false;
-      document.getElementById("voiceOverlay").style.display="none";
-    }
-
-  } else {
-    recognition.stop();
-    listening=false;
-    document.getElementById("voiceOverlay").style.display="none";
-  }
+function speak(text,callback){
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang='fr-FR';
+  const voices = speechSynthesis.getVoices();
+  const voiceFR = voices.find(v=>v.lang.includes('FR'));
+  if(voiceFR) utter.voice = voiceFR;
+  utter.onend = callback;
+  speechSynthesis.speak(utter);
 }
 
-function speak(text){
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang='fr-FR';
-  const voices = speechSynthesis.getVoices();
-  const frenchVoice = voices.find(v => v.lang.includes("FR"));
-  if(frenchVoice) u.voice = frenchVoice;
-  speechSynthesis.speak(u);
+// MICRO
+function startVoice(){
+  const rec = new(window.SpeechRecognition || window.webkitSpeechRecognition)();
+  rec.lang='fr-FR';
+  rec.start();
+  const aiBubble = document.getElementById('aiBubble');
+  aiBubble.style.display='flex';
+
+  rec.onresult = e=>{
+    const spoken = e.results[0][0].transcript;
+    rec.stop();
+    respondAI(spoken);
+  };
 }
 
 // IMAGE
@@ -408,11 +383,10 @@ fileInput.onchange=e=>{
   if(!file) return;
   const reader=new FileReader();
   reader.onload=ev=>{
-    const imgMsg = document.createElement("div");
-    imgMsg.className="message userMsg";
-    imgMsg.innerHTML=`<img src="${ev.target.result}" style="max-width:100%;border-radius:12px">`;
-    chatContainer.appendChild(imgMsg);
-    chatContainer.scrollTop=chatContainer.scrollHeight;
+    chatContainer.innerHTML+=`
+      <div class="message userMsg">
+        <img src="${ev.target.result}" style="max-width:100%;border-radius:12px">
+      </div>`;
   };
   reader.readAsDataURL(file);
 }
@@ -420,8 +394,10 @@ fileInput.onchange=e=>{
 // PROMO
 function validatePromo(){
   promoResult.textContent =
-    promoInput.value==="PROMO2026" ? "Code valide" : "Code invalide";
+    promoInput.value==="PROMO2026"
+    ? "Code valide"
+    : "Code invalide";
 }
 </script>
 </body>
-  </html>
+                                         </html>
