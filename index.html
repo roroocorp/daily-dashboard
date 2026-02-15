@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Daily Life Ultra IA</title>
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui;}
 body{
@@ -13,7 +14,6 @@ body{
   display:flex;
   flex-direction:column;
   transition:background .4s;
-  overflow-x:hidden;
 }
 
 /* HEADER */
@@ -120,8 +120,6 @@ button:hover{background:#0ea5e9}
 .iaMsg{
   background:#22c55e;
   color:black;
-  text-align:center;
-  font-weight:700;
 }
 
 /* IA INPUT BAR */
@@ -134,6 +132,7 @@ button:hover{background:#0ea5e9}
   border-radius:30px;
   padding:8px;
 }
+
 #iaInput{
   flex:1;
   background:transparent;
@@ -148,7 +147,7 @@ button:hover{background:#0ea5e9}
   width:46px;
   height:46px;
   border-radius:50%;
-  background:#f97316;
+  background:#ef4444; /* rouge 100% */
   display:flex;
   align-items:center;
   justify-content:center;
@@ -156,37 +155,38 @@ button:hover{background:#0ea5e9}
   cursor:pointer;
   color:black;
 }
-.iconBtn:hover{background:#ea580c}
+.iconBtn:hover{background:#dc2626}
 
-/* BULLE IA AU CENTRE */
-#aiBubble{
+#fileInput{display:none}
+
+/* BULLE IA CENTRALE ANIMÉE */
+#iaBubble{
   position:fixed;
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
-  background:#22c55e;
-  color:black;
+  width:140px;
+  height:140px;
   border-radius:50%;
-  width:120px;
-  height:120px;
+  background:conic-gradient(#38bdf8,#22c55e,#f59e0b,#ef4444,#38bdf8);
   display:flex;
   align-items:center;
   justify-content:center;
-  font-weight:bold;
-  font-size:16px;
+  font-size:28px;
+  color:white;
   text-align:center;
+  animation: pulse 1s infinite alternate, rotate 3s linear infinite;
   display:none;
-  box-shadow:0 0 20px rgba(0,0,0,0.3);
-  animation: pulse 1s infinite;
-  z-index:9999;
+  z-index:1000;
 }
 @keyframes pulse{
   0%{transform:translate(-50%,-50%) scale(1);}
-  50%{transform:translate(-50%,-50%) scale(1.1);}
-  100%{transform:translate(-50%,-50%) scale(1);}
+  100%{transform:translate(-50%,-50%) scale(1.15);}
 }
-
-#fileInput{display:none}
+@keyframes rotate{
+  0%{background:conic-gradient(#38bdf8,#22c55e,#f59e0b,#ef4444,#38bdf8);}
+  100%{background:conic-gradient(#22c55e,#f59e0b,#ef4444,#38bdf8,#22c55e);}
+}
 
 /* FOOTER */
 footer{
@@ -198,6 +198,7 @@ footer{
 }
 </style>
 </head>
+
 <body>
 
 <header>
@@ -250,14 +251,14 @@ footer{
   <div id="iaInputArea">
     <div class="iconBtn" onclick="fileInput.click()">+</div>
     <input id="iaInput" placeholder="Écris un message…">
-    <div class="iconBtn" onclick="startVoice()">🎤</div>
-    <div class="iconBtn" onclick="sendMessage()">⬆</div>
+    <div class="iconBtn" id="voiceBtn">🎤</div>
+    <div class="iconBtn" onclick="askIA()">⬆</div>
     <input type="file" id="fileInput" accept="image/*">
   </div>
 </div>
 
-<!-- BULLE IA CENTRALE -->
-<div id="aiBubble">IA</div>
+<!-- BULLE CENTRALE IA -->
+<div id="iaBubble">🎙️</div>
 
 <!-- PROMO -->
 <div id="promo" class="page">
@@ -321,60 +322,58 @@ function delTask(i){
 }
 renderTasks();
 
-// ENVOI MESSAGE UTILISATEUR
-function sendMessage(){
+// VOIX IA CENTRALE
+const iaBubble=document.getElementById("iaBubble");
+const voiceBtn=document.getElementById("voiceBtn");
+
+voiceBtn.addEventListener("click",()=>{
+  iaBubble.style.display="flex";
+
+  const recognition = new (window.SpeechRecognition||window.webkitSpeechRecognition)();
+  recognition.lang = "fr-FR";
+  recognition.start();
+
+  recognition.onresult = (event)=>{
+    const text = event.results[0][0].transcript;
+    const reply = simulateAIResponse(text);
+    speak(reply);
+  };
+
+  recognition.onerror = ()=>{
+    iaBubble.style.display="none";
+  };
+});
+
+// IA TEXTE → VOIX
+function askIA(){
   const text = iaInput.value.trim();
   if(!text) return;
-  chatContainer.innerHTML+=`<div class="message userMsg">${text}</div>`;
   iaInput.value="";
-  respondAI(text);
-  chatContainer.scrollTop=chatContainer.scrollHeight;
+  iaBubble.style.display="flex";
+
+  const reply = simulateAIResponse(text);
+  speak(reply);
 }
 
-// RESPONSES IA
-function respondAI(text){
-  const aiBubble = document.getElementById('aiBubble');
-  aiBubble.style.display='flex';
-
-  // simulation IA simple
-  let reply;
-  if(text.toLowerCase().includes("h")) reply="Bonjour ! Qu'est-ce que je peux faire pour aujourd'hui ?";
-  else if(text.toLowerCase().includes("bonjour")) reply="Bonjour ! Comment puis-je t'aider ?";
-  else if(text.toLowerCase().includes("comment")) reply="Je vais très bien, merci !";
-  else reply="Je réfléchis à ta question…";
-
-  speakMale(reply,()=>{
-    aiBubble.style.display='none';
-    chatContainer.innerHTML+=`<div class="message iaMsg">${reply}</div>`;
-    chatContainer.scrollTop=chatContainer.scrollHeight;
-  });
+// SIMULATION IA
+function simulateAIResponse(q){
+  q=q.toLowerCase();
+  if(q.includes("h")) return "Salut ! Comment ça va ?";
+  if(q.includes("bonjour")) return "Bonjour ! Je suis là pour t'aider.";
+  if(q.includes("comment")) return "Je vais très bien, merci de demander !";
+  return "Je réfléchis à ta question… et voici ma réponse !";
 }
 
-// VOIX HOMME
-function speakMale(text,callback){
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang='fr-FR';
+// VOIX
+function speak(text){
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='fr-FR';
   const voices = speechSynthesis.getVoices();
-  // choisir voix homme FR
-  const maleVoice = voices.find(v=>v.lang.includes('FR') && /male/i.test(v.name));
-  if(maleVoice) utter.voice = maleVoice;
-  utter.onend = callback;
-  speechSynthesis.speak(utter);
-}
+  const male = voices.find(v=>v.lang.includes('FR') && v.name.toLowerCase().includes("male")) || voices[0];
+  if(male) u.voice=male;
 
-// MICRO
-function startVoice(){
-  const rec = new(window.SpeechRecognition || window.webkitSpeechRecognition)();
-  rec.lang='fr-FR';
-  rec.start();
-  const aiBubble = document.getElementById('aiBubble');
-  aiBubble.style.display='flex';
-
-  rec.onresult = e=>{
-    const spoken = e.results[0][0].transcript;
-    rec.stop();
-    respondAI(spoken);
-  };
+  u.onend=()=>{iaBubble.style.display="none";}
+  speechSynthesis.speak(u);
 }
 
 // IMAGE
@@ -394,10 +393,9 @@ fileInput.onchange=e=>{
 // PROMO
 function validatePromo(){
   promoResult.textContent =
-    promoInput.value==="PROMO2026"
-    ? "Code valide"
-    : "Code invalide";
+    promoInput.value==="PROMO2026"?"Code valide":"Code invalide";
 }
 </script>
+
 </body>
-      </html>
+  </html>
