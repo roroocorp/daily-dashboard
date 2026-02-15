@@ -148,7 +148,7 @@ button:hover{background:#0ea5e9}
   width:46px;
   height:46px;
   border-radius:50%;
-  background:#f97316; /* bien orange */
+  background:#f97316;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -338,26 +338,26 @@ function respondAI(text){
 
   // simulation IA simple
   let reply;
-  if(text.toLowerCase().includes("h")) reply="Salut ! Comment ça va ?";
-  else if(text.toLowerCase().includes("bonjour")) reply="Bonjour ! Je suis là pour t'aider.";
+  if(text.toLowerCase().includes("h")) reply="Bonjour ! Qu'est-ce que je peux faire pour aujourd'hui ?";
+  else if(text.toLowerCase().includes("bonjour")) reply="Bonjour ! Comment puis-je t'aider ?";
   else if(text.toLowerCase().includes("comment")) reply="Je vais très bien, merci !";
   else reply="Je réfléchis à ta question…";
 
-  speak(reply,()=>{
+  speakMale(reply,()=>{
     aiBubble.style.display='none';
-    // ajouter la bulle IA dans le chat
     chatContainer.innerHTML+=`<div class="message iaMsg">${reply}</div>`;
     chatContainer.scrollTop=chatContainer.scrollHeight;
   });
 }
 
-// VOIX
-function speak(text,callback){
+// VOIX HOMME
+function speakMale(text,callback){
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang='fr-FR';
   const voices = speechSynthesis.getVoices();
-  const voiceFR = voices.find(v=>v.lang.includes('FR'));
-  if(voiceFR) utter.voice = voiceFR;
+  // choisir voix homme FR
+  const maleVoice = voices.find(v=>v.lang.includes('FR') && /male/i.test(v.name));
+  if(maleVoice) utter.voice = maleVoice;
   utter.onend = callback;
   speechSynthesis.speak(utter);
 }
@@ -400,4 +400,4 @@ function validatePromo(){
 }
 </script>
 </body>
-                                         </html>
+      </html>
