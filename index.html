@@ -14,6 +14,7 @@ body{
   flex-direction:column;
   transition:background .4s;
 }
+
 /* HEADER */
 header{
   display:flex;
@@ -30,6 +31,7 @@ header h3{font-size:18px;}
   border-radius:14px;
   font-size:13px;
 }
+
 /* NAV */
 #topNav{
   display:flex;
@@ -48,6 +50,7 @@ header h3{font-size:18px;}
 }
 .navBox.active,
 .navBox:hover{background:rgba(255,255,255,.45);}
+
 /* PAGES */
 .page{
   display:none;
@@ -55,6 +58,7 @@ header h3{font-size:18px;}
   padding:14px;
 }
 .page.active{display:flex;}
+
 /* CARD */
 .card{
   background:rgba(255,255,255,.2);
@@ -63,6 +67,7 @@ header h3{font-size:18px;}
   margin-bottom:16px;
 }
 .card h3{margin-bottom:12px;}
+
 /* INPUT */
 input,select,button{
   width:100%;
@@ -78,6 +83,7 @@ button{
   cursor:pointer;
 }
 button:hover{background:#0ea5e9}
+
 /* TASKS */
 .task{
   display:flex;
@@ -89,6 +95,7 @@ button:hover{background:#0ea5e9}
   margin-top:8px;
 }
 .trash{cursor:pointer;font-size:18px;}
+
 /* IA CHAT */
 #chatContainer{
   height:55vh;
@@ -103,11 +110,6 @@ button:hover{background:#0ea5e9}
   border-radius:18px;
   margin:6px 0;
   white-space:pre-line;
-  animation:pop 0.3s ease-out;
-}
-@keyframes pop {
-  0%{transform:scale(0.5);opacity:0;}
-  100%{transform:scale(1);opacity:1;}
 }
 .userMsg{
   background:#38bdf8;
@@ -115,68 +117,47 @@ button:hover{background:#0ea5e9}
   margin-left:auto;
 }
 .iaMsg{
+  background:#22c55e;
   color:black;
-  text-align:center;
-  font-weight:700;
-  border-radius:50%;
-  width:200px;
-  margin:20px auto;
-  padding:30px;
 }
-/* PULSATION BUBBLE */
-@keyframes pulse {
-  0%{box-shadow:0 0 0 rgba(255,255,255,0);}
-  50%{box-shadow:0 0 20px rgba(255,255,255,0.3);}
-  100%{box-shadow:0 0 0 rgba(255,255,255,0);}
-}
+
 /* IA INPUT BAR */
 #iaInputArea{
   display:flex;
-  justify-content:center;
+  gap:8px;
+  margin-top:10px;
   align-items:center;
+  background:rgba(255,255,255,.15);
+  border-radius:30px;
   padding:8px;
-  position:relative;
 }
+
+#iaInput{
+  flex:1;
+  background:transparent;
+  border:none;
+  color:white;
+  font-size:15px;
+  outline:none;
+}
+
 /* ICON BUTTONS */
 .iconBtn{
-  width:70px;
-  height:70px;
+  width:46px;
+  height:46px;
   border-radius:50%;
   background:#ff4500;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:28px;
+  font-size:18px;
   cursor:pointer;
   color:white;
-  transition:0.3s;
 }
-.iconBtn:hover{transform:scale(1.1);}
-#voiceSelect{
-  position:absolute;
-  bottom:100px;
-  background:#222;
-  border-radius:14px;
-  padding:10px;
-  display:flex;
-  gap:10px;
-  opacity:0;
-  pointer-events:none;
-  transition:opacity 0.3s;
-}
-#voiceSelect.show{
-  opacity:1;
-  pointer-events:auto;
-}
-.voiceOption{
-  padding:6px 12px;
-  background:#38bdf8;
-  border-radius:12px;
-  cursor:pointer;
-  font-size:14px;
-  font-weight:600;
-}
-.voiceOption:hover{background:#0ea5e9;}
+.iconBtn:hover{background:#e63900}
+
+#fileInput{display:none}
+
 /* FOOTER */
 footer{
   margin-top:auto;
@@ -187,11 +168,14 @@ footer{
 }
 </style>
 </head>
+
 <body>
+
 <header>
   <h3>Daily Life Ultra IA</h3>
   <div id="time"></div>
 </header>
+
 <div id="topNav">
   <div class="navBox active" onclick="showPage('home',this)">Accueil</div>
   <div class="navBox" onclick="showPage('ia',this)">IA</div>
@@ -211,6 +195,7 @@ footer{
       <option value="#ec4899">Rose</option>
     </select>
   </div>
+
   <div class="card">
     <h3>🌍 Langue</h3>
     <select>
@@ -220,6 +205,7 @@ footer{
       <option>Allemand</option>
     </select>
   </div>
+
   <div class="card">
     <h3>✅ Tâches</h3>
     <input id="taskInput" placeholder="Nouvelle tâche">
@@ -230,14 +216,15 @@ footer{
 
 <!-- IA -->
 <div id="ia" class="page">
+
   <div id="chatContainer"></div>
+
   <div id="iaInputArea">
+    <div class="iconBtn" onclick="fileInput.click()">+</div>
+    <input id="iaInput" placeholder="Écris un message…">
     <div class="iconBtn" id="microBtn">🎤</div>
-    <div id="voiceSelect">
-      <div class="voiceOption" data-voice="homme">Homme</div>
-      <div class="voiceOption" data-voice="femme">Femme</div>
-      <div class="voiceOption" data-voice="chatgpt">ChatGPT</div>
-    </div>
+    <div class="iconBtn" onclick="askIA()">⬆</div>
+    <input type="file" id="fileInput" accept="image/*">
   </div>
 </div>
 
@@ -303,75 +290,51 @@ function delTask(i){
 }
 renderTasks();
 
-// IA
-let selectedVoice="chatgpt";
-const microBtn=document.getElementById("microBtn");
-const voiceSelect=document.getElementById("voiceSelect");
-microBtn.addEventListener("click",()=>{
-  voiceSelect.classList.toggle("show");
-});
-document.querySelectorAll(".voiceOption").forEach(v=>{
-  v.addEventListener("click",()=>{
-    selectedVoice=v.dataset.voice;
-    voiceSelect.classList.remove("show");
-    startVoice();
-  });
-});
+// IA TEXTE → VOIX DIRECTE
+function askIA() {
+  const q = iaInput.value.trim();
+  if(!q) return;
 
-function startVoice(){
-  const rec=new (window.SpeechRecognition||window.webkitSpeechRecognition)();
-  rec.lang="fr-FR";
-  rec.start();
+  // Message affiché dans chat
+  chatContainer.innerHTML+=`<div class="message userMsg">${q}</div>`;
 
-  const bubble=document.createElement("div");
-  bubble.className="message iaMsg";
-  bubble.style.background=selectedVoice=="homme"?"#1e90ff":selectedVoice=="femme"?"#ff69b4":"#22c55e";
-  bubble.style.animation="pulse 1s infinite";
-  bubble.textContent="🎤 Parle maintenant…";
-  chatContainer.appendChild(bubble);
+  // Réponse simulée
+  const reply="Voici une réponse simulée : "+q;
+  chatContainer.innerHTML+=`<div class="message iaMsg">${reply}</div>`;
+
+  iaInput.value="";
   chatContainer.scrollTop=chatContainer.scrollHeight;
+}
 
-  rec.onresult=e=>{
-    const text=e.results[0][0].transcript;
-    bubble.remove();
-    respond(text);
+// MICRO DÉSACTIVÉ
+document.getElementById("microBtn").addEventListener("click",()=>{
+  alert("Micro désactivé pour le moment.");
+});
+
+// IMAGE
+fileInput.onchange=e=>{
+  const file=e.target.files[0];
+  if(!file) return;
+
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    chatContainer.innerHTML+=`
+      <div class="message userMsg">
+        <img src="${ev.target.result}" style="max-width:100%;border-radius:12px">
+      </div>`;
+    chatContainer.scrollTop=chatContainer.scrollHeight;
   };
-}
-
-function respond(text){
-  const reply=simulateAIResponse(text);
-  const bubble=document.createElement("div");
-  bubble.className="message iaMsg";
-  bubble.style.background=selectedVoice=="homme"?"#1e90ff":selectedVoice=="femme"?"#ff69b4":"#22c55e";
-  bubble.style.animation="pulse 1s infinite";
-  bubble.textContent=reply;
-  chatContainer.appendChild(bubble);
-  chatContainer.scrollTop=chatContainer.scrollHeight;
-  speak(reply,()=>bubble.style.animation="none");
-}
-
-function simulateAIResponse(q){
-  if(q.toLowerCase().includes("h")) return "Salut ! Comment ça va ?";
-  if(q.toLowerCase().includes("bonjour")) return "Bonjour ! Je suis là pour t'aider.";
-  return "Voici ma réponse en vraie voix !";
-}
-
-function speak(text,callback){
-  const u=new SpeechSynthesisUtterance(text);
-  u.lang='fr-FR';
-  const voices=speechSynthesis.getVoices();
-  if(selectedVoice=="homme") u.voice=voices.find(v=>v.lang.includes("FR")&&v.name.toLowerCase().includes("male"))||voices[0];
-  else if(selectedVoice=="femme") u.voice=voices.find(v=>v.lang.includes("FR")&&v.name.toLowerCase().includes("female"))||voices[0];
-  else u.voice=voices.find(v=>v.lang.includes("FR"))||voices[0];
-  u.onend=callback;
-  speechSynthesis.speak(u);
+  reader.readAsDataURL(file);
 }
 
 // PROMO
 function validatePromo(){
   promoResult.textContent =
-    promoInput.value==="PROMO2026" ? "Code valide" : "Code invalide";
+    promoInput.value==="PROMO2026"
+    ? "Code valide"
+    : "Code invalide";
 }
 </script>
+
 </body>
-  </html>
+    </html>
