@@ -159,7 +159,7 @@ button:hover{background:#0ea5e9}
 
 #fileInput{display:none}
 
-/* CENTRÉ VOIX STYLE CHATGPT */
+/* VOIX STYLE CHATGPT (overlay seulement quand on clique) */
 #voiceOverlay{
   display:none;
   position:fixed;
@@ -170,7 +170,6 @@ button:hover{background:#0ea5e9}
   height:180px;
   border-radius:50%;
   background:#f97316;
-  display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
@@ -180,6 +179,7 @@ button:hover{background:#0ea5e9}
   z-index:9999;
   box-shadow:0 0 20px rgba(0,0,0,0.5);
   animation:pulse 1s infinite alternate;
+  display:flex;
 }
 @keyframes pulse{
   0%{transform:translate(-50%,-50%) scale(1);}
@@ -254,7 +254,7 @@ button:hover{background:#0ea5e9}
   </div>
 </div>
 
-<!-- CENTRÉ VOIX -->
+<!-- VOIX STYLE CHATGPT -->
 <div id="voiceOverlay">
   <div>Parle maintenant...</div>
   <div id="voiceButtons">
@@ -355,7 +355,7 @@ function startVoice(){
   recognition.continuous=true;
   recognition.start();
 
-  // Affiche overlay
+  // Affiche overlay seulement au clic
   const overlay = document.getElementById('voiceOverlay');
   overlay.style.display='flex';
 
@@ -422,4 +422,4 @@ function validatePromo(){
 }
 </script>
 </body>
-                        </html>
+      </html>
