@@ -239,11 +239,11 @@ opacity:.7;
 
 <h3>🌍 Langue</h3>
 
-<select>
-<option>Français</option>
-<option>Anglais</option>
-<option>Espagnol</option>
-<option>Allemand</option>
+<select id="languageSelect">
+<option value="fr">Français</option>
+<option value="en">English</option>
+<option value="es">Español</option>
+<option value="de">Deutsch</option>
 </select>
 
 </div>
@@ -310,7 +310,7 @@ opacity:.7;
 
 <script>
 
-/* TIME */
+/* HORLOGE */
 
 setInterval(()=>time.textContent=new Date().toLocaleTimeString(),1000);
 
@@ -349,6 +349,58 @@ function applyColor(){
 document.body.style.background=`linear-gradient(180deg,${colorSelect.value},#042f2e)`;
 
 }
+
+/* LANGUES */
+
+let currentLang="fr";
+
+const translations={
+
+fr:{
+write:"Écris un message…",
+task:"Nouvelle tâche",
+promo:"Entre ton code",
+hello:"Salut ! Comment ça va ?",
+default:"Je suis là pour t'aider 👍"
+},
+
+en:{
+write:"Write a message…",
+task:"New task",
+promo:"Enter your code",
+hello:"Hey! How are you?",
+default:"I'm here to help 👍"
+},
+
+es:{
+write:"Escribe un mensaje…",
+task:"Nueva tarea",
+promo:"Introduce tu código",
+hello:"¡Hola! ¿Cómo estás?",
+default:"Estoy aquí para ayudarte 👍"
+},
+
+de:{
+write:"Nachricht schreiben…",
+task:"Neue Aufgabe",
+promo:"Code eingeben",
+hello:"Hallo! Wie geht's?",
+default:"Ich bin hier um zu helfen 👍"
+}
+
+};
+
+languageSelect.addEventListener("change",()=>{
+
+currentLang=languageSelect.value;
+
+iaInput.placeholder=translations[currentLang].write;
+
+taskInput.placeholder=translations[currentLang].task;
+
+promoInput.placeholder=translations[currentLang].promo;
+
+});
 
 /* TASKS */
 
@@ -410,7 +462,19 @@ if(!q) return;
 
 chatContainer.innerHTML+=`<div class="message userMsg">${q}</div>`;
 
-const reply="Message reçu 👍";
+let text=q.toLowerCase();
+
+let reply="";
+
+if(text.includes("yo")||text.includes("salut")||text.includes("hello")){
+
+reply=translations[currentLang].hello;
+
+}else{
+
+reply=translations[currentLang].default;
+
+}
 
 chatContainer.innerHTML+=`<div class="message iaMsg">${reply}</div>`;
 
