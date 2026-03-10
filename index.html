@@ -17,6 +17,8 @@ flex-direction:column;
 transition:background .4s;
 }
 
+/* HEADER */
+
 header{
 display:flex;
 align-items:center;
@@ -25,6 +27,8 @@ padding:14px 18px;
 background:rgba(0,0,0,.3);
 }
 
+header h3{font-size:18px;}
+
 #time{
 margin-left:auto;
 background:rgba(0,0,0,.35);
@@ -32,6 +36,8 @@ padding:6px 14px;
 border-radius:14px;
 font-size:13px;
 }
+
+/* NAV */
 
 #topNav{
 display:flex;
@@ -47,9 +53,13 @@ border-radius:22px;
 text-align:center;
 font-weight:800;
 cursor:pointer;
+transition:.3s;
 }
 
-.navBox.active{background:rgba(255,255,255,.45);}
+.navBox.active,
+.navBox:hover{background:rgba(255,255,255,.45);}
+
+/* PAGES */
 
 .page{
 display:none;
@@ -59,12 +69,18 @@ padding:14px;
 
 .page.active{display:flex;}
 
+/* CARD */
+
 .card{
 background:rgba(255,255,255,.2);
 border-radius:22px;
 padding:20px;
 margin-bottom:16px;
 }
+
+.card h3{margin-bottom:12px;}
+
+/* INPUT */
 
 input,select,button{
 width:100%;
@@ -81,6 +97,10 @@ margin-top:10px;
 cursor:pointer;
 }
 
+button:hover{background:#0ea5e9}
+
+/* TASKS */
+
 .task{
 display:flex;
 justify-content:space-between;
@@ -90,6 +110,10 @@ padding:12px;
 border-radius:14px;
 margin-top:8px;
 }
+
+.trash{cursor:pointer;font-size:18px;}
+
+/* IA CHAT */
 
 #chatContainer{
 height:55vh;
@@ -118,6 +142,8 @@ background:#22c55e;
 color:black;
 }
 
+/* IA INPUT BAR */
+
 #iaInputArea{
 display:flex;
 gap:8px;
@@ -133,8 +159,11 @@ flex:1;
 background:transparent;
 border:none;
 color:white;
+font-size:15px;
 outline:none;
 }
+
+/* BUTTONS */
 
 .iconBtn{
 width:42px;
@@ -144,11 +173,25 @@ display:flex;
 align-items:center;
 justify-content:center;
 cursor:pointer;
+}
+
+.attachBtn{
 background:#2f2f2f;
 color:white;
+font-size:22px;
+}
+
+.sendBtn{
+background:#2f2f2f;
+}
+
+.sendBtn:hover{
+background:#3a3a3a;
 }
 
 #fileInput{display:none}
+
+/* FOOTER */
 
 footer{
 margin-top:auto;
@@ -157,6 +200,7 @@ font-size:12px;
 text-align:right;
 opacity:.7;
 }
+
 </style>
 </head>
 
@@ -173,10 +217,13 @@ opacity:.7;
 <div class="navBox" onclick="showPage('promo',this)">Code Promo</div>
 </div>
 
+<!-- ACCUEIL -->
+
 <div id="home" class="page active">
 
 <div class="card">
 <h3>🎨 Couleur</h3>
+
 <select id="colorSelect">
 <option value="#064e3b">Vert</option>
 <option value="#3b82f6">Bleu</option>
@@ -185,26 +232,37 @@ opacity:.7;
 <option value="#a855f7">Violet</option>
 <option value="#ec4899">Rose</option>
 </select>
+
 </div>
 
 <div class="card">
+
 <h3>🌍 Langue</h3>
+
 <select id="languageSelect">
 <option value="fr">Français</option>
 <option value="en">English</option>
 <option value="es">Español</option>
-<option value="de">Allemand</option>
+<option value="de">Deutsch</option>
 </select>
+
 </div>
 
 <div class="card">
+
 <h3>✅ Tâches</h3>
+
 <input id="taskInput" placeholder="Nouvelle tâche">
+
 <button onclick="addTask()">Ajouter</button>
+
 <div id="taskList"></div>
+
 </div>
 
 </div>
+
+<!-- IA -->
 
 <div id="ia" class="page">
 
@@ -212,11 +270,17 @@ opacity:.7;
 
 <div id="iaInputArea">
 
-<div class="iconBtn" onclick="fileInput.click()">+</div>
+<div class="iconBtn attachBtn" onclick="fileInput.click()">+</div>
 
 <input id="iaInput" placeholder="Écris un message…">
 
-<div class="iconBtn" onclick="askIA()">➤</div>
+<div class="iconBtn sendBtn" onclick="askIA()">
+
+<svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+<path d="M2 21L23 12L2 3V10L17 12L2 14V21Z"/>
+</svg>
+
+</div>
 
 <input type="file" id="fileInput" accept="image/*">
 
@@ -224,27 +288,47 @@ opacity:.7;
 
 </div>
 
+<!-- PROMO -->
+
 <div id="promo" class="page">
+
 <div class="card">
+
 <h3>🎁 Code Promo</h3>
+
 <input id="promoInput" placeholder="Entre ton code">
+
 <button onclick="validatePromo()">Valider</button>
+
 <div id="promoResult"></div>
+
 </div>
+
 </div>
 
 <footer>© 2026 Daily Life Ultra IA ⚡</footer>
 
 <script>
 
+/* HORLOGE */
+
 setInterval(()=>time.textContent=new Date().toLocaleTimeString(),1000);
 
+/* NAV */
+
 function showPage(id,el){
+
 document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+
 document.getElementById(id).classList.add('active');
+
 document.querySelectorAll('.navBox').forEach(b=>b.classList.remove('active'));
+
 el.classList.add('active');
+
 }
+
+/* THEME */
 
 const colorSelect=document.getElementById("colorSelect");
 
@@ -253,93 +337,193 @@ colorSelect.value=localStorage.getItem("color")||"#064e3b";
 applyColor();
 
 colorSelect.onchange=()=>{
+
 localStorage.setItem("color",colorSelect.value);
+
 applyColor();
+
 }
 
 function applyColor(){
+
 document.body.style.background=`linear-gradient(180deg,${colorSelect.value},#042f2e)`;
+
 }
+
+/* LANGUES */
 
 let currentLang="fr";
 
 const translations={
-fr:{hello:"Salut ! Comment ça va ?"},
-en:{hello:"Hello! How are you?"},
-es:{hello:"¡Hola! ¿Cómo estás?"},
-de:{hello:"Hallo! Wie geht's?"}
+
+fr:{
+write:"Écris un message…",
+task:"Nouvelle tâche",
+promo:"Entre ton code",
+hello:"Salut ! Comment ça va ?",
+default:"Je suis là pour t'aider 👍"
+},
+
+en:{
+write:"Write a message…",
+task:"New task",
+promo:"Enter your code",
+hello:"Hey! How are you?",
+default:"I'm here to help 👍"
+},
+
+es:{
+write:"Escribe un mensaje…",
+task:"Nueva tarea",
+promo:"Introduce tu código",
+hello:"¡Hola! ¿Cómo estás?",
+default:"Estoy aquí para ayudarte 👍"
+},
+
+de:{
+write:"Nachricht schreiben…",
+task:"Neue Aufgabe",
+promo:"Code eingeben",
+hello:"Hallo! Wie geht's?",
+default:"Ich bin hier um zu helfen 👍"
+}
+
 };
 
 languageSelect.addEventListener("change",()=>{
+
 currentLang=languageSelect.value;
+
+iaInput.placeholder=translations[currentLang].write;
+
+taskInput.placeholder=translations[currentLang].task;
+
+promoInput.placeholder=translations[currentLang].promo;
+
 });
+
+/* TASKS */
+
+let tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
+
+function renderTasks(){
+
+taskList.innerHTML="";
+
+tasks.forEach((t,i)=>{
+
+taskList.innerHTML+=`
+
+<div class="task">
+
+<span>${t}</span>
+
+<span class="trash" onclick="delTask(${i})">🗑️</span>
+
+</div>`;
+
+});
+
+}
+
+function addTask(){
+
+if(!taskInput.value.trim())return;
+
+tasks.push(taskInput.value.trim());
+
+localStorage.setItem("tasks",JSON.stringify(tasks));
+
+taskInput.value="";
+
+renderTasks();
+
+}
+
+function delTask(i){
+
+tasks.splice(i,1);
+
+localStorage.setItem("tasks",JSON.stringify(tasks));
+
+renderTasks();
+
+}
+
+renderTasks();
+
+/* IA */
 
 function askIA(){
 
 const q=iaInput.value.trim();
+
 if(!q) return;
 
 chatContainer.innerHTML+=`<div class="message userMsg">${q}</div>`;
 
 let text=q.toLowerCase();
+
 let reply="";
 
 if(text.includes("yo")||text.includes("salut")||text.includes("hello")){
+
 reply=translations[currentLang].hello;
-}
 
-else if(text.includes("bien")||text.includes("good")){
-reply="Je vais bien aussi merci 🙂 Je suis là pour t'aider si tu veux poser une question.";
-}
+}else{
 
-else if(text.includes("pâte")||text.includes("pasta")||text.includes("spaghetti")){
-reply=
-"🍝 Comment faire des pâtes :\n\n"+
-"1️⃣ Remplis une casserole avec de l'eau\n"+
-"2️⃣ Fais bouillir l'eau\n"+
-"3️⃣ Ajoute une pincée de sel\n"+
-"4️⃣ Mets les pâtes\n\n"+
-"⏱ Temps moyen :\n"+
-"Spaghetti : 8-10 min\n"+
-"Penne : 10-12 min\n"+
-"Fusilli : 10 min\n"+
-"Farfalle : 10-12 min\n\n"+
-"5️⃣ Égoutte les pâtes\n\n"+
-"✅ Bon appétit !";
-}
+reply=translations[currentLang].default;
 
-else{
-reply="Je suis là pour t'aider 👍";
 }
 
 chatContainer.innerHTML+=`<div class="message iaMsg">${reply}</div>`;
 
 iaInput.value="";
+
 chatContainer.scrollTop=chatContainer.scrollHeight;
 
 }
 
+/* IMAGE */
+
 fileInput.onchange=e=>{
+
 const file=e.target.files[0];
+
 if(!file) return;
 
 const reader=new FileReader();
 
 reader.onload=ev=>{
+
 chatContainer.innerHTML+=`
+
 <div class="message userMsg">
-<img src="${ev.target.result}" style="max-width:100%;border-radius:12px;border:none;">
+
+<img src="${ev.target.result}" style="max-width:100%;border-radius:12px;border:none;outline:none;">
+
 </div>`;
+
+chatContainer.scrollTop=chatContainer.scrollHeight;
+
 };
 
 reader.readAsDataURL(file);
+
 };
 
+/* PROMO */
+
 function validatePromo(){
+
 promoResult.textContent=
+
 promoInput.value==="PROMO2026"
+
 ? "Code valide"
+
 : "Code invalide";
+
 }
 
 </script>
