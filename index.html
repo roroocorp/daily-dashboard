@@ -4,529 +4,331 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Daily Life Ultra IA</title>
-
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui;}
-
 body{
-min-height:100vh;
-background:linear-gradient(180deg,#064e3b,#042f2e);
-color:white;
-display:flex;
-flex-direction:column;
-transition:background .4s;
+  min-height:100vh;
+  background:linear-gradient(180deg,#064e3b,#042f2e);
+  color:white;
+  display:flex;
+  flex-direction:column;
+  transition:background .4s;
 }
 
 /* HEADER */
-
 header{
-display:flex;
-align-items:center;
-gap:12px;
-padding:14px 18px;
-background:rgba(0,0,0,.3);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 18px;
+  background:rgba(0,0,0,.3);
 }
-
 header h3{font-size:18px;}
-
 #time{
-margin-left:auto;
-background:rgba(0,0,0,.35);
-padding:6px 14px;
-border-radius:14px;
-font-size:13px;
+  margin-left:auto;
+  background:rgba(0,0,0,.35);
+  padding:6px 14px;
+  border-radius:14px;
+  font-size:13px;
 }
 
 /* NAV */
-
 #topNav{
-display:flex;
-gap:12px;
-padding:14px;
+  display:flex;
+  gap:12px;
+  padding:14px;
 }
-
 .navBox{
-flex:1;
-padding:18px 0;
-background:rgba(255,255,255,.25);
-border-radius:22px;
-text-align:center;
-font-weight:800;
-cursor:pointer;
-transition:.3s;
+  flex:1;
+  padding:18px 0;
+  background:rgba(255,255,255,.25);
+  border-radius:22px;
+  text-align:center;
+  font-weight:800;
+  cursor:pointer;
+  transition:.3s;
 }
-
 .navBox.active,
 .navBox:hover{background:rgba(255,255,255,.45);}
 
 /* PAGES */
-
 .page{
-display:none;
-flex-direction:column;
-padding:14px;
+  display:none;
+  flex-direction:column;
+  padding:14px;
 }
-
 .page.active{display:flex;}
 
 /* CARD */
-
 .card{
-background:rgba(255,255,255,.2);
-border-radius:22px;
-padding:20px;
-margin-bottom:16px;
+  background:rgba(255,255,255,.2);
+  border-radius:22px;
+  padding:20px;
+  margin-bottom:16px;
 }
-
 .card h3{margin-bottom:12px;}
 
 /* INPUT */
-
 input,select,button{
-width:100%;
-padding:14px;
-border-radius:16px;
-border:none;
-font-size:15px;
+  width:100%;
+  padding:14px;
+  border-radius:16px;
+  border:none;
+  font-size:15px;
 }
-
 button{
-background:#38bdf8;
-font-weight:700;
-margin-top:10px;
-cursor:pointer;
+  background:#38bdf8;
+  font-weight:700;
+  margin-top:10px;
+  cursor:pointer;
 }
-
 button:hover{background:#0ea5e9}
 
 /* TASKS */
-
 .task{
-display:flex;
-justify-content:space-between;
-align-items:center;
-background:rgba(255,255,255,.3);
-padding:12px;
-border-radius:14px;
-margin-top:8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:rgba(255,255,255,.3);
+  padding:12px;
+  border-radius:14px;
+  margin-top:8px;
 }
-
 .trash{cursor:pointer;font-size:18px;}
 
 /* IA CHAT */
-
 #chatContainer{
-height:55vh;
-overflow-y:auto;
-background:rgba(255,255,255,.15);
-border-radius:20px;
-padding:10px;
+  height:55vh;
+  overflow-y:auto;
+  background:rgba(255,255,255,.15);
+  border-radius:20px;
+  padding:10px;
 }
-
 .message{
-max-width:70%;
-padding:10px 14px;
-border-radius:18px;
-margin:6px 0;
-white-space:pre-line;
+  max-width:70%;
+  padding:10px 14px;
+  border-radius:18px;
+  margin:6px 0;
+  white-space:pre-line;
 }
-
 .userMsg{
-background:#38bdf8;
-color:black;
-margin-left:auto;
+  background:#38bdf8;
+  color:black;
+  margin-left:auto;
 }
-
 .iaMsg{
-background:#22c55e;
-color:black;
+  background:#22c55e;
+  color:black;
 }
 
 /* IA INPUT BAR */
-
 #iaInputArea{
-display:flex;
-gap:8px;
-margin-top:10px;
-align-items:center;
-background:rgba(255,255,255,.15);
-border-radius:30px;
-padding:8px;
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+  align-items:center;
+  background:rgba(255,255,255,.15);
+  border-radius:30px;
+  padding:8px;
 }
 
 #iaInput{
-flex:1;
-background:transparent;
-border:none;
-color:white;
-font-size:15px;
-outline:none;
+  flex:1;
+  background:transparent;
+  border:none;
+  color:white;
+  font-size:15px;
+  outline:none;
 }
 
-/* BUTTONS */
-
+/* ICON BUTTONS */
 .iconBtn{
-width:42px;
-height:42px;
-border-radius:50%;
-display:flex;
-align-items:center;
-justify-content:center;
-cursor:pointer;
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  background:#d4d4d8; /* gris clair type ChatGPT */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  cursor:pointer;
+  color:black;
 }
-
-.attachBtn{
-background:#2f2f2f;
-color:white;
-font-size:22px;
-}
-
-.sendBtn{
-background:#2f2f2f;
-}
-
-.sendBtn:hover{
-background:#3a3a3a;
-}
+.iconBtn:hover{background:#a1a1aa} /* gris un peu plus foncé */
 
 #fileInput{display:none}
 
 /* FOOTER */
-
 footer{
-margin-top:auto;
-padding:8px 14px;
-font-size:12px;
-text-align:right;
-opacity:.7;
+  margin-top:auto;
+  padding:8px 14px;
+  font-size:12px;
+  text-align:right;
+  opacity:.7;
 }
-
 </style>
 </head>
 
 <body>
 
 <header>
-<h3>Daily Life Ultra IA</h3>
-<div id="time"></div>
+  <h3>Daily Life Ultra IA</h3>
+  <div id="time"></div>
 </header>
 
 <div id="topNav">
-<div class="navBox active" onclick="showPage('home',this)">Accueil</div>
-<div class="navBox" onclick="showPage('ia',this)">IA</div>
-<div class="navBox" onclick="showPage('promo',this)">Code Promo</div>
+  <div class="navBox active" onclick="showPage('home',this)">Accueil</div>
+  <div class="navBox" onclick="showPage('ia',this)">IA</div>
+  <div class="navBox" onclick="showPage('promo',this)">Code Promo</div>
 </div>
 
 <!-- ACCUEIL -->
-
 <div id="home" class="page active">
+  <div class="card">
+    <h3>🎨 Couleur</h3>
+    <select id="colorSelect">
+      <option value="#064e3b">Vert</option>
+      <option value="#3b82f6">Bleu</option>
+      <option value="#ef4444">Rouge</option>
+      <option value="#f97316">Orange</option>
+      <option value="#a855f7">Violet</option>
+      <option value="#ec4899">Rose</option>
+    </select>
+  </div>
 
-<div class="card">
-<h3>🎨 Couleur</h3>
+  <div class="card">
+    <h3>🌍 Langue</h3>
+    <select>
+      <option>Français</option>
+      <option>Anglais</option>
+      <option>Espagnol</option>
+      <option>Allemand</option>
+    </select>
+  </div>
 
-<select id="colorSelect">
-<option value="#064e3b">Vert</option>
-<option value="#3b82f6">Bleu</option>
-<option value="#ef4444">Rouge</option>
-<option value="#f97316">Orange</option>
-<option value="#a855f7">Violet</option>
-<option value="#ec4899">Rose</option>
-</select>
-
-</div>
-
-<div class="card">
-
-<h3>🌍 Langue</h3>
-
-<select id="languageSelect">
-<option value="fr">Français</option>
-<option value="en">English</option>
-<option value="es">Español</option>
-<option value="de">Deutsch</option>
-</select>
-
-</div>
-
-<div class="card">
-
-<h3>✅ Tâches</h3>
-
-<input id="taskInput" placeholder="Nouvelle tâche">
-
-<button onclick="addTask()">Ajouter</button>
-
-<div id="taskList"></div>
-
-</div>
-
+  <div class="card">
+    <h3>✅ Tâches</h3>
+    <input id="taskInput" placeholder="Nouvelle tâche">
+    <button onclick="addTask()">Ajouter</button>
+    <div id="taskList"></div>
+  </div>
 </div>
 
 <!-- IA -->
-
 <div id="ia" class="page">
 
-<div id="chatContainer"></div>
+  <div id="chatContainer"></div>
 
-<div id="iaInputArea">
-
-<div class="iconBtn attachBtn" onclick="fileInput.click()">+</div>
-
-<input id="iaInput" placeholder="Écris un message…">
-
-<div class="iconBtn sendBtn" onclick="askIA()">
-
-<svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-<path d="M2 21L23 12L2 3V10L17 12L2 14V21Z"/>
-</svg>
-
-</div>
-
-<input type="file" id="fileInput" accept="image/*">
-
-</div>
-
+  <div id="iaInputArea">
+    <div class="iconBtn" onclick="fileInput.click()">+</div>
+    <input id="iaInput" placeholder="Écris un message…">
+    <div class="iconBtn" onclick="askIA()">➡️</div>
+    <input type="file" id="fileInput" accept="image/*">
+  </div>
 </div>
 
 <!-- PROMO -->
-
 <div id="promo" class="page">
-
-<div class="card">
-
-<h3>🎁 Code Promo</h3>
-
-<input id="promoInput" placeholder="Entre ton code">
-
-<button onclick="validatePromo()">Valider</button>
-
-<div id="promoResult"></div>
-
-</div>
-
+  <div class="card">
+    <h3>🎁 Code Promo</h3>
+    <input id="promoInput" placeholder="Entre ton code">
+    <button onclick="validatePromo()">Valider</button>
+    <div id="promoResult"></div>
+  </div>
 </div>
 
 <footer>© 2026 Daily Life Ultra IA ⚡</footer>
 
 <script>
-
-/* HORLOGE */
-
+// TIME
 setInterval(()=>time.textContent=new Date().toLocaleTimeString(),1000);
 
-/* NAV */
-
+// NAV
 function showPage(id,el){
-
-document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-
-document.getElementById(id).classList.add('active');
-
-document.querySelectorAll('.navBox').forEach(b=>b.classList.remove('active'));
-
-el.classList.add('active');
-
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.navBox').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
 }
 
-/* THEME */
-
+// THEME
 const colorSelect=document.getElementById("colorSelect");
-
 colorSelect.value=localStorage.getItem("color")||"#064e3b";
-
 applyColor();
-
 colorSelect.onchange=()=>{
-
-localStorage.setItem("color",colorSelect.value);
-
-applyColor();
-
+  localStorage.setItem("color",colorSelect.value);
+  applyColor();
 }
-
 function applyColor(){
-
-document.body.style.background=`linear-gradient(180deg,${colorSelect.value},#042f2e)`;
-
+  document.body.style.background=`linear-gradient(180deg,${colorSelect.value},#042f2e)`;
 }
 
-/* LANGUES */
-
-let currentLang="fr";
-
-const translations={
-
-fr:{
-write:"Écris un message…",
-task:"Nouvelle tâche",
-promo:"Entre ton code",
-hello:"Salut ! Comment ça va ?",
-default:"Je suis là pour t'aider 👍"
-},
-
-en:{
-write:"Write a message…",
-task:"New task",
-promo:"Enter your code",
-hello:"Hey! How are you?",
-default:"I'm here to help 👍"
-},
-
-es:{
-write:"Escribe un mensaje…",
-task:"Nueva tarea",
-promo:"Introduce tu código",
-hello:"¡Hola! ¿Cómo estás?",
-default:"Estoy aquí para ayudarte 👍"
-},
-
-de:{
-write:"Nachricht schreiben…",
-task:"Neue Aufgabe",
-promo:"Code eingeben",
-hello:"Hallo! Wie geht's?",
-default:"Ich bin hier um zu helfen 👍"
-}
-
-};
-
-languageSelect.addEventListener("change",()=>{
-
-currentLang=languageSelect.value;
-
-iaInput.placeholder=translations[currentLang].write;
-
-taskInput.placeholder=translations[currentLang].task;
-
-promoInput.placeholder=translations[currentLang].promo;
-
-});
-
-/* TASKS */
-
+// TASKS
 let tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
-
 function renderTasks(){
-
-taskList.innerHTML="";
-
-tasks.forEach((t,i)=>{
-
-taskList.innerHTML+=`
-
-<div class="task">
-
-<span>${t}</span>
-
-<span class="trash" onclick="delTask(${i})">🗑️</span>
-
-</div>`;
-
-});
-
+  taskList.innerHTML="";
+  tasks.forEach((t,i)=>{
+    taskList.innerHTML+=`
+      <div class="task">
+        <span>${t}</span>
+        <span class="trash" onclick="delTask(${i})">🗑️</span>
+      </div>`;
+  });
 }
-
 function addTask(){
-
-if(!taskInput.value.trim())return;
-
-tasks.push(taskInput.value.trim());
-
-localStorage.setItem("tasks",JSON.stringify(tasks));
-
-taskInput.value="";
-
-renderTasks();
-
+  if(!taskInput.value.trim())return;
+  tasks.push(taskInput.value.trim());
+  localStorage.setItem("tasks",JSON.stringify(tasks));
+  taskInput.value="";
+  renderTasks();
 }
-
 function delTask(i){
-
-tasks.splice(i,1);
-
-localStorage.setItem("tasks",JSON.stringify(tasks));
-
+  tasks.splice(i,1);
+  localStorage.setItem("tasks",JSON.stringify(tasks));
+  renderTasks();
+}
 renderTasks();
 
+// IA MESSAGE
+function askIA() {
+  const q = iaInput.value.trim();
+  if(!q) return;
+
+  // message utilisateur
+  chatContainer.innerHTML += `<div class="message userMsg">${q}</div>`;
+
+  // réponse simulée (ici tu peux ajouter plusieurs phrases comme tu veux)
+  const reply = "Flurry"; 
+  chatContainer.innerHTML += `<div class="message iaMsg">${reply}</div>`;
+
+  iaInput.value="";
+  chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-renderTasks();
+// IMAGE
+fileInput.onchange = e => {
+  const file = e.target.files[0];
+  if (!file) return;
 
-/* IA */
-
-function askIA(){
-
-const q=iaInput.value.trim();
-
-if(!q) return;
-
-chatContainer.innerHTML+=`<div class="message userMsg">${q}</div>`;
-
-let text=q.toLowerCase();
-
-let reply="";
-
-if(text.includes("yo")||text.includes("salut")||text.includes("hello")){
-
-reply=translations[currentLang].hello;
-
-}else{
-
-reply=translations[currentLang].default;
-
+  const reader = new FileReader();
+  reader.onload = ev => {
+    chatContainer.innerHTML += `
+      <div class="message userMsg">
+        <img src="${ev.target.result}" style="max-width:100%; border-radius:12px; border:none;">
+      </div>`;
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  };
+  reader.readAsDataURL(file);
 }
 
-chatContainer.innerHTML+=`<div class="message iaMsg">${reply}</div>`;
-
-iaInput.value="";
-
-chatContainer.scrollTop=chatContainer.scrollHeight;
-
-}
-
-/* IMAGE */
-
-fileInput.onchange=e=>{
-
-const file=e.target.files[0];
-
-if(!file) return;
-
-const reader=new FileReader();
-
-reader.onload=ev=>{
-
-chatContainer.innerHTML+=`
-
-<div class="message userMsg">
-
-<img src="${ev.target.result}" style="max-width:100%;border-radius:12px;border:none;outline:none;">
-
-</div>`;
-
-chatContainer.scrollTop=chatContainer.scrollHeight;
-
-};
-
-reader.readAsDataURL(file);
-
-};
-
-/* PROMO */
-
+// PROMO
 function validatePromo(){
-
-promoResult.textContent=
-
-promoInput.value==="PROMO2026"
-
-? "Code valide"
-
-: "Code invalide";
-
+  promoResult.textContent =
+    promoInput.value==="PROMO2026"
+    ? "Code valide"
+    : "Code invalide";
 }
-
 </script>
 
 </body>
-  </html>
+</html>
