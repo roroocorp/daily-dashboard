@@ -275,11 +275,9 @@ opacity:.7;
 <input id="iaInput" placeholder="Écris un message…">
 
 <div class="iconBtn sendBtn" onclick="askIA()">
-
 <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
 <path d="M2 21L23 12L2 3V10L17 12L2 14V21Z"/>
 </svg>
-
 </div>
 
 <input type="file" id="fileInput" accept="image/*">
@@ -291,19 +289,12 @@ opacity:.7;
 <!-- PROMO -->
 
 <div id="promo" class="page">
-
 <div class="card">
-
 <h3>🎁 Code Promo</h3>
-
 <input id="promoInput" placeholder="Entre ton code">
-
 <button onclick="validatePromo()">Valider</button>
-
 <div id="promoResult"></div>
-
 </div>
-
 </div>
 
 <footer>© 2026 Daily Life Ultra IA ⚡</footer>
@@ -311,219 +302,151 @@ opacity:.7;
 <script>
 
 /* HORLOGE */
-
 setInterval(()=>time.textContent=new Date().toLocaleTimeString(),1000);
 
 /* NAV */
-
 function showPage(id,el){
-
 document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-
 document.getElementById(id).classList.add('active');
-
 document.querySelectorAll('.navBox').forEach(b=>b.classList.remove('active'));
-
 el.classList.add('active');
-
 }
 
 /* THEME */
-
 const colorSelect=document.getElementById("colorSelect");
-
 colorSelect.value=localStorage.getItem("color")||"#064e3b";
-
 applyColor();
 
 colorSelect.onchange=()=>{
-
 localStorage.setItem("color",colorSelect.value);
-
 applyColor();
-
 }
 
 function applyColor(){
-
 document.body.style.background=`linear-gradient(180deg,${colorSelect.value},#042f2e)`;
-
 }
 
 /* LANGUES */
-
 let currentLang="fr";
 
 const translations={
-
 fr:{
 write:"Écris un message…",
 task:"Nouvelle tâche",
-promo:"Entre ton code",
-hello:"Salut ! Comment ça va ?",
-default:"Je suis là pour t'aider 👍"
+promo:"Entre ton code"
 },
-
 en:{
 write:"Write a message…",
 task:"New task",
-promo:"Enter your code",
-hello:"Hey! How are you?",
-default:"I'm here to help 👍"
+promo:"Enter your code"
 },
-
 es:{
 write:"Escribe un mensaje…",
 task:"Nueva tarea",
-promo:"Introduce tu código",
-hello:"¡Hola! ¿Cómo estás?",
-default:"Estoy aquí para ayudarte 👍"
+promo:"Introduce tu código"
 },
-
 de:{
 write:"Nachricht schreiben…",
 task:"Neue Aufgabe",
-promo:"Code eingeben",
-hello:"Hallo! Wie geht's?",
-default:"Ich bin hier um zu helfen 👍"
+promo:"Code eingeben"
 }
-
 };
 
 languageSelect.addEventListener("change",()=>{
-
 currentLang=languageSelect.value;
-
 iaInput.placeholder=translations[currentLang].write;
-
 taskInput.placeholder=translations[currentLang].task;
-
 promoInput.placeholder=translations[currentLang].promo;
-
 });
 
 /* TASKS */
-
 let tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
 
 function renderTasks(){
-
 taskList.innerHTML="";
-
 tasks.forEach((t,i)=>{
-
 taskList.innerHTML+=`
-
 <div class="task">
-
 <span>${t}</span>
-
 <span class="trash" onclick="delTask(${i})">🗑️</span>
-
 </div>`;
-
 });
-
 }
 
 function addTask(){
-
 if(!taskInput.value.trim())return;
-
 tasks.push(taskInput.value.trim());
-
 localStorage.setItem("tasks",JSON.stringify(tasks));
-
 taskInput.value="";
-
 renderTasks();
-
 }
 
 function delTask(i){
-
 tasks.splice(i,1);
-
 localStorage.setItem("tasks",JSON.stringify(tasks));
-
 renderTasks();
-
 }
 
 renderTasks();
 
-/* IA */
-
+/* IA (MODIFIÉE SEULEMENT ICI) */
 function askIA(){
 
 const q=iaInput.value.trim();
-
 if(!q) return;
 
 chatContainer.innerHTML+=`<div class="message userMsg">${q}</div>`;
 
 let text=q.toLowerCase();
-
 let reply="";
 
-if(text.includes("yo")||text.includes("salut")||text.includes("hello")){
-
-reply=translations[currentLang].hello;
-
-}else{
-
-reply=translations[currentLang].default;
-
+if(text.includes("salut") || text.includes("yo") || text.includes("hello")){
+reply="Salut 🙂 Comment ça va ?";
+}
+else if(text.includes("comment ça va") || text.includes("ca va")){
+reply="Je vais bien aussi merci 😊 Et toi ?";
+}
+else if(text.includes("bien") || text.includes("ça va bien") || text.includes("ca va bien")){
+reply="Super 😄 Content que ça aille bien ! Tu veux faire quoi ?";
+}
+else if(text.includes("merci")){
+reply="Avec plaisir 😊 Tu veux autre chose ?";
+}
+else{
+reply="D'accord 👍 Dis-moi en plus.";
 }
 
 chatContainer.innerHTML+=`<div class="message iaMsg">${reply}</div>`;
 
 iaInput.value="";
-
 chatContainer.scrollTop=chatContainer.scrollHeight;
 
 }
 
 /* IMAGE */
-
 fileInput.onchange=e=>{
-
 const file=e.target.files[0];
-
 if(!file) return;
 
 const reader=new FileReader();
 
 reader.onload=ev=>{
-
 chatContainer.innerHTML+=`
-
 <div class="message userMsg">
-
 <img src="${ev.target.result}" style="max-width:100%;border-radius:12px;border:none;outline:none;">
-
 </div>`;
-
 chatContainer.scrollTop=chatContainer.scrollHeight;
-
 };
 
 reader.readAsDataURL(file);
-
 };
 
 /* PROMO */
-
 function validatePromo(){
-
 promoResult.textContent=
-
 promoInput.value==="PROMO2026"
-
 ? "Code valide"
-
 : "Code invalide";
-
 }
 
 </script>
