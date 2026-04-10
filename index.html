@@ -330,26 +330,10 @@ document.body.style.background=`linear-gradient(180deg,${colorSelect.value},#042
 let currentLang="fr";
 
 const translations={
-fr:{
-write:"Écris un message…",
-task:"Nouvelle tâche",
-promo:"Entre ton code"
-},
-en:{
-write:"Write a message…",
-task:"New task",
-promo:"Enter your code"
-},
-es:{
-write:"Escribe un mensaje…",
-task:"Nueva tarea",
-promo:"Introduce tu código"
-},
-de:{
-write:"Nachricht schreiben…",
-task:"Neue Aufgabe",
-promo:"Code eingeben"
-}
+fr:{write:"Écris un message…",task:"Nouvelle tâche",promo:"Entre ton code"},
+en:{write:"Write a message…",task:"New task",promo:"Enter your code"},
+es:{write:"Escribe un mensaje…",task:"Nueva tarea",promo:"Introduce tu código"},
+de:{write:"Nachricht schreiben…",task:"Neue Aufgabe",promo:"Code eingeben"}
 };
 
 languageSelect.addEventListener("change",()=>{
@@ -389,7 +373,7 @@ renderTasks();
 
 renderTasks();
 
-/* IA (MODIFIÉE SEULEMENT ICI) */
+/* IA AMÉLIORÉE */
 function askIA(){
 
 const q=iaInput.value.trim();
@@ -401,19 +385,28 @@ let text=q.toLowerCase();
 let reply="";
 
 if(text.includes("salut") || text.includes("yo") || text.includes("hello")){
-reply="Salut 🙂 Comment ça va ?";
+reply="Salut 😄 comment tu vas ?";
 }
 else if(text.includes("comment ça va") || text.includes("ca va")){
-reply="Je vais bien aussi merci 😊 Et toi ?";
+reply="Je vais bien merci 😊 et toi ?";
 }
-else if(text.includes("bien") || text.includes("ça va bien") || text.includes("ca va bien")){
-reply="Super 😄 Content que ça aille bien ! Tu veux faire quoi ?";
+else if(text.includes("bien")){
+reply="Parfait 😄 tu fais quoi de beau ?";
+}
+else if(text.includes("triste") || text.includes("mal")){
+reply="💙 Désolé… parle-moi, qu’est-ce qui ne va pas ?";
+}
+else if(text.includes("ennui")){
+reply="Tu peux regarder un film 🎬, jouer 🎮 ou sortir un peu 😄";
+}
+else if(text.includes("aide") || text.includes("conseil")){
+reply="Bien sûr 👍 dis-moi ce dont tu as besoin.";
 }
 else if(text.includes("merci")){
-reply="Avec plaisir 😊 Tu veux autre chose ?";
+reply="Avec plaisir 😊";
 }
 else{
-reply="D'accord 👍 Dis-moi en plus.";
+reply="Je vois 👍 explique-moi un peu plus.";
 }
 
 chatContainer.innerHTML+=`<div class="message iaMsg">${reply}</div>`;
@@ -433,7 +426,7 @@ const reader=new FileReader();
 reader.onload=ev=>{
 chatContainer.innerHTML+=`
 <div class="message userMsg">
-<img src="${ev.target.result}" style="max-width:100%;border-radius:12px;border:none;outline:none;">
+<img src="${ev.target.result}" style="max-width:100%;border-radius:12px;">
 </div>`;
 chatContainer.scrollTop=chatContainer.scrollHeight;
 };
